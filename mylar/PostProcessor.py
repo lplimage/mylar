@@ -156,8 +156,18 @@ class PostProcessor(object):
                 data = file.read()
                 file.close()
                 dom = parseString(data)
+<<<<<<< HEAD
     
                 sabreps = dom.getElementsByTagName('replace_spaces')[0].firstChild.wholeText
+=======
+
+                try:
+                    sabreps = dom.getElementsByTagName('replace_spaces')[0].firstChild.wholeText
+                except:
+                    errorm = dom.getElementsByTagName('error')[0].firstChild.wholeText
+                    logger.error(u"Error detected attempting to retrieve SAB data : " + errorm)
+                    return
+>>>>>>> origin/development
                 sabrepd = dom.getElementsByTagName('replace_dots')[0].firstChild.wholeText
                 logger.fdebug("SAB Replace Spaces: " + str(sabreps))
                 logger.fdebug("SAB Replace Dots: " + str(sabrepd))
@@ -204,6 +214,7 @@ class PostProcessor(object):
                     issueid = nzbiss['IssueID']
             else: 
                 issueid = nzbiss['IssueID']
+<<<<<<< HEAD
                 print "issueid:" + str(issueid)
                 #use issueid to get publisher, series, year, issue number
             issuenzb = myDB.action("SELECT * from issues WHERE issueid=?", [issueid]).fetchone()
@@ -276,6 +287,121 @@ class PostProcessor(object):
                     self._log("Issue Number: " + str(issueno), logger.DEBUG)
                     logger.fdebug("Issue Number: " + str(issueno))
                 else:
+=======
+                logger.fdebug("issueid:" + str(issueid))
+                sarc = nzbiss['SARC']
+                #use issueid to get publisher, series, year, issue number
+            issuenzb = myDB.action("SELECT * from issues WHERE issueid=?", [issueid]).fetchone()
+            if issuenzb is not None:
+                if helpers.is_number(issueid):
+                    sandwich = int(issuenzb['IssueID'])
+            else:
+                #if it's non-numeric, it contains a 'G' at the beginning indicating it's a multi-volume
+                #using GCD data. Set sandwich to 1 so it will bypass and continue post-processing.
+                if 'S' in issueid:
+                    sandwich = issueid
+                elif 'G' in issueid: 
+                    sandwich = 1
+            if helpers.is_number(sandwich):
+                if sandwich < 900000:
+                    # if sandwich is less than 900000 it's a normal watchlist download. Bypass.
+                    pass
+            else:
+                if issuenzb is None or 'S' in sandwich or int(sandwich) >= 900000:
+                    # this has no issueID, therefore it's a one-off or a manual post-proc.
+                    # At this point, let's just drop it into the Comic Location folder and forget about it..
+                    if 'S' in sandwich:
+                        self._log("One-off STORYARC mode enabled for Post-Processing for " + str(sarc))
+                        logger.info("One-off STORYARC mode enabled for Post-Processing for " + str(sarc))
+                        if mylar.STORYARCDIR:
+                            storyarcd = os.path.join(mylar.DESTINATION_DIR, "StoryArcs", sarc)
+                            self._log("StoryArc Directory set to : " + storyarcd, logger.DEBUG)
+                        else:
+                            self._log("Grab-Bag Directory set to : " + mylar.GRABBAG_DIR, logger.DEBUG)
+
+                    else:
+                        self._log("One-off mode enabled for Post-Processing. All I'm doing is moving the file untouched into the Grab-bag directory.", logger.DEBUG)
+                        logger.info("One-off mode enabled for Post-Processing. Will move into Grab-bag directory.")
+                        self._log("Grab-Bag Directory set to : " + mylar.GRABBAG_DIR, logger.DEBUG)
+
+                    for root, dirnames, filenames in os.walk(self.nzb_folder):
+                        for filename in filenames:
+                            if filename.lower().endswith(extensions):
+                                ofilename = filename
+                                path, ext = os.path.splitext(ofilename)
+      
+                    if 'S' in sandwich:
+                        if mylar.STORYARCDIR:
+                            grdst = storyarcd
+                        else:
+                            grdst = mylar.DESTINATION_DIR
+                    else:
+                        if mylar.GRABBAG_DIR:
+                            grdst = mylar.GRABBAG_DIR
+                        else:
+                            grdst = mylar.DESTINATION_DIR
+
+                    filechecker.validateAndCreateDirectory(grdst, True)
+    
+                    grab_dst = os.path.join(grdst, ofilename)
+                    self._log("Destination Path : " + grab_dst, logger.DEBUG)
+                    logger.info("Destination Path : " + grab_dst)
+                    grab_src = os.path.join(self.nzb_folder, ofilename)
+                    self._log("Source Path : " + grab_src, logger.DEBUG)
+                    logger.info("Source Path : " + grab_src)
+
+                    logger.info("Moving " + str(ofilename) + " into directory : " + str(grdst))
+
+                    try:
+                        shutil.move(grab_src, grab_dst)
+                    except (OSError, IOError):
+                        self._log("Failed to move directory - check directories and manually re-run.", logger.DEBUG)
+                        logger.debug("Failed to move directory - check directories and manually re-run.")
+                        return
+                    #tidyup old path
+                    try:
+                        shutil.rmtree(self.nzb_folder)
+                    except (OSError, IOError):
+                        self._log("Failed to remove temporary directory.", logger.DEBUG)
+                        logger.debug("Failed to remove temporary directory - check directory and manually re-run.")
+                        return
+
+                    logger.debug("Removed temporary directory : " + str(self.nzb_folder))
+                    self._log("Removed temporary directory : " + self.nzb_folder, logger.DEBUG)
+                    #delete entry from nzblog table
+                    myDB.action('DELETE from nzblog WHERE issueid=?', [issueid])
+
+                    if 'S' in issueid:
+                        issuearcid = re.sub('S', '', issueid)
+                        logger.info("IssueArcID is : " + str(issuearcid))
+                        ctrlVal = {"IssueArcID":  issuearcid}
+                        newVal = {"Status":    "Downloaded",
+                                  "Location":  grab_dst }
+                        myDB.upsert("readinglist",newVal,ctrlVal)
+                        logger.info("updated status to Downloaded")
+                    return self.log
+
+            comicid = issuenzb['ComicID']
+            issuenumOG = issuenzb['Issue_Number']
+            #issueno = str(issuenum).split('.')[0]
+            #new CV API - removed all decimals...here we go AGAIN!
+            issuenum = issuenumOG
+            issue_except = 'None'
+            if 'au' in issuenum.lower():
+                issuenum = re.sub("[^0-9]", "", issuenum)
+                issue_except = ' AU'
+            if '.' in issuenum:
+                iss_find = issuenum.find('.')
+                iss_b4dec = issuenum[:iss_find]
+                iss_decval = issuenum[iss_find+1:]
+                if int(iss_decval) == 0:
+                    iss = iss_b4dec
+                    issdec = int(iss_decval)
+                    issueno = str(iss)
+                    self._log("Issue Number: " + str(issueno), logger.DEBUG)
+                    logger.fdebug("Issue Number: " + str(issueno))
+                else:
+>>>>>>> origin/development
                     if len(iss_decval) == 1:
                         iss = iss_b4dec + "." + iss_decval
                         issdec = int(iss_decval) * 10
@@ -409,11 +535,17 @@ class PostProcessor(object):
                            '$VolumeN':   comversion
                           }
 
+            ofilename = None
+
             for root, dirnames, filenames in os.walk(self.nzb_folder):
                 for filename in filenames:
                     if filename.lower().endswith(extensions):
                         ofilename = filename
                         path, ext = os.path.splitext(ofilename)
+
+            if ofilename is None:
+                logger.error(u"Aborting PostProcessing - the filename doesn't exist in the location given. Make sure that " + str(self.nzb_folder) + " exists and is the correct location.")
+                return
             self._log("Original Filename: " + ofilename, logger.DEBUG)
             self._log("Original Extension: " + ext, logger.DEBUG)
             logger.fdebug("Original Filname: " + str(ofilename))
@@ -468,6 +600,8 @@ class PostProcessor(object):
             self._log("Removed temporary directory : " + str(self.nzb_folder), logger.DEBUG)
                     #delete entry from nzblog table
             myDB.action('DELETE from nzblog WHERE issueid=?', [issueid])
+                    #update snatched table to change status to Downloaded
+            updater.foundsearch(comicid, issueid, down='True')
                     #force rescan of files
             updater.forceRescan(comicid)
             logger.info(u"Post-Processing completed for: " + series + " issue: " + str(issuenumOG) )

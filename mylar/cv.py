@@ -164,7 +164,15 @@ def GetComicInfo(comicid,dom):
     else:
         comic['ComicIssues'] = dom.getElementsByTagName('count_of_issues')[0].firstChild.wholeText
     comic['ComicImage'] = dom.getElementsByTagName('super_url')[0].firstChild.wholeText
+<<<<<<< HEAD
     comic['ComicPublisher'] = dom.getElementsByTagName('name')[trackcnt+2].firstChild.wholeText
+=======
+
+    try:
+        comic['ComicPublisher'] = dom.getElementsByTagName('name')[trackcnt+2].firstChild.wholeText
+    except:
+        comic['ComicPublisher'] = "Unknown"
+>>>>>>> origin/development
 
     comic['FirstIssueID'] = dom.getElementsByTagName('id')[0].firstChild.wholeText
 
@@ -206,6 +214,7 @@ def GetIssuesInfo(comicid,dom):
                 issue['Issue_Name'] = dom.getElementsByTagName('name')[n].firstChild.wholeText
             else:
                 issue['Issue_Name'] = 'None'
+<<<<<<< HEAD
 
             issue['Issue_ID'] = dom.getElementsByTagName('id')[n].firstChild.wholeText
             issue['Issue_Number'] = dom.getElementsByTagName('issue_number')[n].firstChild.wholeText
@@ -233,6 +242,35 @@ def GetIssuesInfo(comicid,dom):
                 'Issue_Name':              tempissue['Issue_Name']
                 })
 
+=======
+
+            issue['Issue_ID'] = dom.getElementsByTagName('id')[n].firstChild.wholeText
+            issue['Issue_Number'] = dom.getElementsByTagName('issue_number')[n].firstChild.wholeText
+            
+            issuech.append({
+                'Issue_ID':                issue['Issue_ID'],
+                'Issue_Number':            issue['Issue_Number'],
+                'Issue_Name':              issue['Issue_Name']
+                })
+        else:
+            try:
+                tempissue['Issue_Name'] = subtrack.getElementsByTagName('name')[0].firstChild.wholeText
+            except:
+                tempissue['Issue_Name'] = 'None'
+            tempissue['Issue_ID'] = subtrack.getElementsByTagName('id')[0].firstChild.wholeText
+            try:
+                tempissue['CoverDate'] = subtrack.getElementsByTagName('cover_date')[0].firstChild.wholeText
+            except:
+                tempissue['CoverDate'] = '0000-00-00'
+            tempissue['Issue_Number'] = subtrack.getElementsByTagName('issue_number')[0].firstChild.wholeText
+            issuech.append({
+                'Issue_ID':                tempissue['Issue_ID'],
+                'Issue_Number':            tempissue['Issue_Number'],
+                'Issue_Date':              tempissue['CoverDate'],
+                'Issue_Name':              tempissue['Issue_Name']
+                })
+
+>>>>>>> origin/development
             if tempissue['CoverDate'] < firstdate and tempissue['CoverDate'] != '0000-00-00':
                 firstdate = tempissue['CoverDate']
         n-=1
