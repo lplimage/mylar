@@ -17,7 +17,11 @@ elif len(sys.argv) >= 3:
     sys.exit(autoProcessComics.processEpisode(sys.argv[1], sys.argv[3]))
 else:
 <<<<<<< HEAD
+<<<<<<< HEAD
     autoProcessComics.processEpisode(sys.argv[1])
 =======
     sys.exit(autoProcessComics.processEpisode(sys.argv[1]))
 >>>>>>> origin/development
+=======
+    sys.exit(autoProcessComics.processEpisode(sys.argv[1]))
+>>>>>>> fcdefac8a60c48eaabe75266c76e34828072df85

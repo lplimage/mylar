@@ -26,8 +26,22 @@
                                 myDB = db.DBConnection()
                                 issue = myDB.select("SELECT * FROM issues WHERE ComicID=?", [comic['ComicID']])
                                 wantedc = myDB.action("SELECT COUNT(*) as count FROM issues WHERE ComicID=? AND Status='Wanted'", [comic['ComicID']]).fetchone()
+                                if annuals_on:
+                                    anwantedc = myDB.action("SELECT COUNT(*) as count FROM annuals WHERE ComicID=? AND Status='Wanted'", [comic['ComicID']]).fetchone()
+                                    annual = myDB.action("SELECT COUNT(*) as count FROM annuals WHERE ComicID=?", [comic['ComicID']]).fetchone()
+                                else:
+                                    anwantedc = 0
+                                    annual = 0
                                 archedc = myDB.action("SELECT COUNT(*) as count FROM issues WHERE ComicID=? AND Status='Archived'", [comic['ComicID']]).fetchone()
-                                totaltracks = comic['Total']
+                                if annuals_on:
+                                    annualcount = annual[0]
+                                    if not annualcount:
+                                        annualcount = 0
+                                    anns = anwantedc[0]
+                                else:
+                                    annualcount = 0
+                                    anns = 0
+                                totaltracks = comic['Total'] + annualcount
                                 havetracks = comic['Have']
                                 wants = wantedc[0]
                                 arcs = archedc[0]
@@ -35,6 +49,8 @@
                                         havetracks = 0
                                 if not wants:
                                     wants = 0
+                                if not anns:
+                                    anns = 0
                                 if not arcs:
                                     arcs = 0
                                 try:
@@ -66,7 +82,7 @@
 			%>
 			<tr class="grade${grade}">
 				<td id="publisher">${comic['ComicPublisher']}</td>
-                                <td id="name"><span title="${comic['ComicSortName']}"></span><a href="artistPage?ComicID=${comic['ComicID']}">${comic['ComicName']}</a></td>
+                                <td id="name"><span title="${comic['ComicSortName']}"></span><a href="comicDetails?ComicID=${comic['ComicID']}">${comic['ComicName']}</a></td>
                                 <td id="year"><span title="${comic['ComicYear']}"></span>${comic['ComicYear']}</td>                               
 				<td id="issue"><span title="${comic['LatestIssue']}"></span># ${comic['LatestIssue']}</td>
                                 <td id="published">${comic['LatestDate']}</td>
@@ -74,22 +90,35 @@
 				<td id="status">
                                 %if comic['ComicPublished'] is None or comic['ComicPublished'] == '':
                                     Unknown 
+<<<<<<< HEAD
                                 %elif 'present' in comic['ComicPublished'].lower() or ( helpers.today()[:4] in comic['LatestDate']):
 <<<<<<< HEAD
                                     Continuing
 =======
+=======
+                                %elif comic['ForceContinuing'] == 1:
+                                    Continuing
+                                %elif 'present' in comic['ComicPublished'].lower() or ( helpers.today()[:4] in comic['LatestDate']):
+>>>>>>> fcdefac8a60c48eaabe75266c76e34828072df85
                                     <%
                                           latestdate = comic['LatestDate']
                                           c_date = datetime.date(int(latestdate[:4]),int(latestdate[5:7]),1)
                                           n_date = datetime.date.today()
                                           recentchk = (n_date - c_date).days
+<<<<<<< HEAD
                                           if recentchk < 45:
+=======
+                                          if recentchk < 55:
+>>>>>>> fcdefac8a60c48eaabe75266c76e34828072df85
                                               recentstatus = 'Continuing'
                                           else:
                                               recentstatus = 'Ended'
                                      %>
                                     ${recentstatus}
+<<<<<<< HEAD
 >>>>>>> origin/development
+=======
+>>>>>>> fcdefac8a60c48eaabe75266c76e34828072df85
                                 %else:
                                     Ended
                                 %endif

@@ -133,7 +133,8 @@ def GetComicInfo(comicid,dom):
     comic['ComicURL'] = dom.getElementsByTagName('site_detail_url')[trackcnt].firstChild.wholeText
     #the description field actually holds the Volume# - so let's grab it
     try:
-        comic['ComicDescription'] = dom.getElementsByTagName('description')[0].firstChild.wholeText
+        descchunk = dom.getElementsByTagName('description')[0].firstChild.wholeText
+        comic['ComicDescription'] = drophtml(descchunk)
     except:
         comic['ComicDescription'] = 'None'
     #extract the first 60 characters
@@ -165,14 +166,20 @@ def GetComicInfo(comicid,dom):
         comic['ComicIssues'] = dom.getElementsByTagName('count_of_issues')[0].firstChild.wholeText
     comic['ComicImage'] = dom.getElementsByTagName('super_url')[0].firstChild.wholeText
 <<<<<<< HEAD
+<<<<<<< HEAD
     comic['ComicPublisher'] = dom.getElementsByTagName('name')[trackcnt+2].firstChild.wholeText
 =======
+=======
+>>>>>>> fcdefac8a60c48eaabe75266c76e34828072df85
 
     try:
         comic['ComicPublisher'] = dom.getElementsByTagName('name')[trackcnt+2].firstChild.wholeText
     except:
         comic['ComicPublisher'] = "Unknown"
+<<<<<<< HEAD
 >>>>>>> origin/development
+=======
+>>>>>>> fcdefac8a60c48eaabe75266c76e34828072df85
 
     comic['FirstIssueID'] = dom.getElementsByTagName('id')[0].firstChild.wholeText
 
@@ -291,3 +298,12 @@ def GetFirstIssue(issueid,dom):
     the_date = the_year + '-' + the_month
 
     return the_year
+
+
+def drophtml(html):
+    from bs4 import BeautifulSoup
+    soup = BeautifulSoup(html)
+
+    text_parts = soup.findAll(text=True)
+    #print ''.join(text_parts)
+    return ''.join(text_parts)
